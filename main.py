@@ -6,9 +6,19 @@ from models import Todo
 from schemas import TodoCreate, TodoResponse
 import models
 
+# Create database tables
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="Todo API",
+    description="FastAPI + SQLAlchemy CRUD API",
+    version="1.0.0"
+)
+
+# Home Route
+@app.get("/")
+def home():
+    return {"message": "Todo API is running successfully on Railway 🚀"}
 
 # Database Dependency
 def get_db():
@@ -17,7 +27,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 # CREATE
 @app.post("/todos", response_model=TodoResponse)
@@ -33,12 +42,10 @@ def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
 
     return db_todo
 
-
 # READ ALL
 @app.get("/todos", response_model=list[TodoResponse])
 def get_todos(db: Session = Depends(get_db)):
     return db.query(Todo).all()
-
 
 # READ ONE
 @app.get("/todos/{todo_id}", response_model=TodoResponse)
@@ -52,7 +59,6 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)):
         )
 
     return todo
-
 
 # UPDATE
 @app.put("/todos/{todo_id}", response_model=TodoResponse)
@@ -72,7 +78,6 @@ def update_todo(todo_id: int, updated_todo: TodoCreate, db: Session = Depends(ge
     db.refresh(todo)
 
     return todo
-
 
 # DELETE
 @app.delete("/todos/{todo_id}")
